@@ -1,217 +1,444 @@
-import { PieChart, Pie, Cell, Legend, Tooltip } from 'recharts';
-import '../../styles/DashboardAnalytics.css';
+import { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
+import WorkOrderCard from './WorkOrderCard';
+import SearchBar from '../search/SearchBar';
+import WorkOrderModal from '../modals/WorkOrderModal';
+import CarModal from '../modals/CarModal';
+import UserModal from '../modals/UserModal';
+import '../../styles/Dashboard.css';
+import '../../styles/Modal.css';
 
-const DashboardAnalytics = ({ workOrders, cars }) => {
-  // Flatten work orders into a single array
-  const allOrders = [
-    ...(workOrders.pending || []),
-    ...(workOrders.inprogress || []),
-    ...(workOrders.complete || [])
-  ];
+/**
+ * Dashboard Component
+ * Main interface for managing work orders, users, and cars
+ */
 
-  // Prepare data for status chart
-  const statusData = [
-    { name: 'Pending', value: workOrders.pending?.length || 0 },
-    { name: 'In Progress', value: workOrders.inprogress?.length || 0 },
-    { name: 'Complete', value: workOrders.complete?.length || 0 },
-  ];
-
-
-  // Compute department counts
-  const departmentCounts = allOrders.reduce((acc, order) => {
-    const dept = order.department || 'Unknown';
-    acc[dept] = (acc[dept] || 0) + 1;
-    return acc;
-  }, {});
-
-  // Prepare data for department chart
-  const departmentData = Object.entries(departmentCounts).map(([key, value]) => ({
-    name: key,
-    value,
-  }));
-
-
-
-  // Prepare data for car status chart
-  const carStatusCounts = cars?.reduce((acc, car) => {
-    const status = car.status || 'Unknown';
-    acc[status] = (acc[status] || 0) + 1;
-    return acc;
-  }, {});
-  // Prepare data for car status chart
-  const carStatusData = Object.entries(carStatusCounts || {}).map(([key, value]) => ({
-    name: key,
-    value,
-  }));
-
-
-
-  // Color sets for charts
-  const COLORS = ['#0088FE', '#FFBB28', '#FF8042', '#9C27B0', '#4CAF50', '#795548'];
-
-
-  // Custom Label Component
-  // Render custom labels for pie chart
-  const CustomLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, value }) => {
-    const RADIAN = Math.PI / 180;
-    const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
-    const x = cx + radius * Math.cos(-midAngle * RADIAN);
-    const y = cy + radius * Math.sin(-midAngle * RADIAN);
-
-    return value ? (
-      <text
-        x={x}
-        y={y}
-        fill="#fff"
-        textAnchor="middle"
-        dominantBaseline="central"
-        fontSize="12px"
-      >
-        {`${value} (${(percent * 100).toFixed(0)}%)`}
-      </text>
-    ) : null;
-  };
-
-  CustomLabel.propTypes = {
-    cx: PropTypes.number.isRequired,
-    cy: PropTypes.number.isRequired,
-    midAngle: PropTypes.number.isRequired,
-    innerRadius: PropTypes.number.isRequired,
-    outerRadius: PropTypes.number.isRequired,
-    percent: PropTypes.number.isRequired,
-    value: PropTypes.number.isRequired,
-  };
-
-
-
-  // Custom Tooltip Component
-  // Render custom tooltip for pie chart
-  const CustomTooltip = ({ active, payload }) => {
-    if (active && payload && payload.length) {
-      CustomTooltip.propTypes = {
-        active: PropTypes.bool.isRequired,
-        payload: PropTypes.array,
-      };
-    
-      return (
-        <div style={{ 
-          backgroundColor: '#40444b',
-          padding: '8px',
-          border: '1px solid #202225',
-          borderRadius: '4px'
-        }}>
-          <p style={{ color: '#fff', margin: 0 }}>
-            {`${payload[0].name}: ${payload[0].value}`}
-          </p>
-        </div>
-      );
+const Dashboard = ({ setToken }) => {
+  const [modalType, setModalType] = useState(null);
+  const [cars, setCars] = useState([]);
+  const [users, setUsers] = useState([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  const isAdmin = () => {
+    const token = localStorage.getItem('token');
+    if (!token) return false;
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      return payload.isAdmin === true;
+    } catch {
+      return false;
     }
-    return null;
   };
+
+  // Step 1: Update initial state
+  const [workOrders, setWorkOrders] = useState({
+    pending: [],
+    inprogress: [], // Match backend format
+    complete: []
+  });
+
+  // Add loading state
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [selectedEntity, setSelectedEntity] = useState(null);
+  const [entityType, setEntityType] = useState(null);
+
+  // Step 2: Update status mapping constant
+  const STATUS_MAPPING = {
+    'Pending': { display: 'Pending', backend: 'Pending' },
+    'In Progress': { display: 'In Progress', backend: 'InProgress' },
+    'Complete': { display: 'Complete', backend: 'Complete' }
+  };
+
+  // Update STATUS_MAP to match backend
+  const STATUS_MAP = {
+    pending: 'Pending',
+    inprogress: 'InProgress',
+    complete: 'Complete'
+  };
+
+  // Add empty templates near top of component
+  const emptyWorkOrder = {
+    department: 'Service',
+    serviceType: '',
+    status: 'Pending',
+    tasks: [],
+    comments: [],
+    technicianAssigned: ''
+  };
+
+  // Entity Templates - Default values for new entities
+  const ENTITY_TEMPLATES = {
+    car: {
+      make: '',
+      model: '',
+      year: new Date().getFullYear(),
+      vin: '',
+      licensePlate: '',
+      color: '',
+      engineType: '',
+      transmissionType: 'Automatic',
+      mileage: 0,
+      fuelType: 'Gasoline',
+      price: 0,
+      condition: 'New',
+      seatingCapacity: 5,
+      drivetrain: 'FWD',
+      status: 'For Sale'
+    },
+    user: {
+      firstName: '',
+      lastName: '',
+      username: '',
+      jobTitle: '',
+      department: '',
+      email: '',
+      phoneNumber: '',
+      hireDate: new Date().toISOString().split('T')[0],
+      employmentStatus: 'Active'
+    }
+  };
+
+  // Add creation handlers
+  /**
+   * Entity creation handler
+   * @param {string} type - Entity type (car, user, workorder)
+   * @param {Object} data - Entity data to create
+   */
+  const handleCreate = async (type, data) => {
+    if (isSubmitting) return;
+    setIsSubmitting(true);
+    setError(null);
+  
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_BACKEND_URL}/api/${type}s`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          },
+          body: JSON.stringify(data)
+        }
+      );
+  
+      if (!response.ok) {
+        throw new Error(`Failed to create ${type}`);
+      }
+  
+      const newEntity = await response.json();
+  
+      // Update state based on entity type
+      switch (type) {
+        case 'workorder':
+          setWorkOrders(prev => ({
+            ...prev,
+            pending: [...prev.pending, newEntity]
+          }));
+          break;
+        case 'car':
+          setCars(prev => [...prev, newEntity]);
+          break;
+        case 'user':
+          setUsers(prev => [...prev, newEntity]);
+          break;
+      }
+  
+      setModalType(null);
+    } catch (error) {
+      setError(error.message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Step 3: Update data processing
+  useEffect(() => {
+    const fetchWorkOrders = async () => {
+      setIsLoading(true);
+      try {
+        const token = localStorage.getItem("token");
+        const response = await fetch(
+          `${import.meta.env.VITE_BACKEND_URL}/api/workorders`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        if (!response.ok) throw new Error("Failed to fetch work orders");
+        const data = await response.json();
+        const sortedOrders = { pending: [], inprogress: [], complete: [] };
+
+        data.forEach(order => {
+          if (order.status === 'InProgress') sortedOrders.inprogress.push(order);
+          else if (order.status === 'Pending') sortedOrders.pending.push(order);
+          else if (order.status === 'Complete') sortedOrders.complete.push(order);
+        });
+
+        setWorkOrders(sortedOrders);
+      } catch (error) {
+        console.error('Error fetching work orders:', error);
+        setWorkOrders({ pending: [], inprogress: [], complete: [] });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchWorkOrders();
+  }, [setToken]);
+
+  // Fetch cars on mount
+  useEffect(() => {
+    const fetchCars = async () => {
+      try {
+        const response = await fetch(
+          `${import.meta.env.VITE_BACKEND_URL}/api/cars`,
+          {
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+          }
+        );
+        if (response.ok) {
+          const data = await response.json();
+          setCars(data);
+        }
+      } catch (error) {
+        console.error('Error fetching cars:', error);
+      }
+    };
+
+    fetchCars();
+  }, []);
+
+  // Fetch users on mount
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const response = await fetch(
+          `${import.meta.env.VITE_BACKEND_URL}/api/users`,
+          {
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+          }
+        );
+        if (response.ok) {
+          const data = await response.json();
+          setUsers(data);
+        }
+      } catch (error) {
+        console.error('Error fetching users:', error);
+      }
+    };
+    fetchUsers();
+  }, []);
+
+  const handleDrop = async (orderId, rawStatus) => {
+    try {
+      let orderToUpdate = null;
+      let currentStatus = '';
+      for (const [status, orders] of Object.entries(workOrders)) {
+        const found = orders.find(order => order.workOrderId.toString() === orderId);
+        if (found) {
+          orderToUpdate = found;
+          currentStatus = status;
+          break;
+        }
+      }
+      if (!orderToUpdate) return;
+
+      const response = await fetch(
+        `${import.meta.env.VITE_BACKEND_URL}/api/workorders/${orderToUpdate._id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${localStorage.getItem("token")}`
+          },
+          body: JSON.stringify({ status: STATUS_MAP[rawStatus.toLowerCase()] })
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Error updating work order");
+      }
+      const updatedOrder = await response.json();
+
+      setWorkOrders(prev => {
+        const updated = { ...prev };
+        updated[currentStatus] = updated[currentStatus].filter(o => o.workOrderId !== +orderId);
+        updated[rawStatus.toLowerCase()] = [...updated[rawStatus.toLowerCase()], updatedOrder];
+        return updated;
+      });
+    } catch (error) {
+      console.error('Error updating work order:', error);
+    }
+  };
+
+  const handleEntitySelect = (entity, type) => {
+    setSelectedEntity(entity);
+    setEntityType(type);
+  };
+
+  const handleEntitySave = (updatedEntity) => {
+    if (entityType === 'workorders') {
+      // Update workOrders state
+      setWorkOrders(prevOrders => {
+        const updated = { ...prevOrders };
+        const statusKey = updatedEntity.status.toLowerCase();
+        updated[statusKey] = updated[statusKey].map(order => 
+          order._id === updatedEntity._id ? updatedEntity : order
+        );
+        return updated;
+      });
+    }
+    setSelectedEntity(null);
+  };
+
+  // Step 4: Update render logic
+  if (isLoading) return <div>Loading work orders...</div>;
+  if (error) return <div>Error: {error}</div>;
 
   return (
-    <div className="analytics-container">
-      {/* Status Breakdown Chart */}
-      <div className="chart-container">
-        <h3 className="chart-title">Status Breakdown</h3>
-        <div className="pie-chart-wrapper">
-          <PieChart width={350} height={300}>
-            <Pie
-              data={statusData}
-              dataKey="value"
-              nameKey="name"
-              cx="50%"
-              cy="50%"
-              outerRadius={100}
-              fill="#8884d8"
-              label={<CustomLabel />}
+    <div className="dashboard">
+      <div className="dashboard-header">
+        <h1>Work Order Dashboard</h1>
+        <div className="header-controls">
+          <div className="action-buttons">
+            <button 
+              className="create-button"
+              onClick={() => setModalType('workorder')}
             >
-              {statusData.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-              ))}
-            </Pie>
-            <Tooltip content={<CustomTooltip />} />
-            <Legend 
-              verticalAlign="bottom" 
-              align="center" 
-              layout="horizontal" 
-              wrapperStyle={{ paddingTop: '10px' }}
-            />
-          </PieChart>
+              New Work Order
+            </button>
+            <button 
+              className="create-button"
+              onClick={() => setModalType('car')}
+            >
+              New Car
+            </button>
+            {isAdmin() && (
+              <button 
+                className="create-button admin"
+                onClick={() => setModalType('user')}
+              >
+                New User
+              </button>
+            )}
+          </div>
+          <SearchBar onSelect={handleEntitySelect} />
+          <button 
+            className="logout-button"
+            onClick={() => {
+              localStorage.removeItem('token');
+              setToken(null);
+            }}
+          >
+            Logout
+          </button>
         </div>
+      </div>
+      <div className="dashboard-content">
+        {Object.entries(STATUS_MAPPING).map(([key, { display, backend }]) => {
+          const statusKey = backend === 'InProgress' ? 'inprogress' : backend.toLowerCase();
+          const workOrderList = workOrders[statusKey] || [];
+          
+          return (
+            <div
+              key={key}
+              className="status-column"
+              onDrop={(e) => {
+                const orderId = e.dataTransfer.getData('orderId');
+                handleDrop(orderId, backend);
+              }}
+              onDragOver={(e) => e.preventDefault()}
+            >
+              <div className="column-header">
+                <h2>{display}</h2>
+              </div>
+              <div className="column-content">
+                {workOrderList.map((order) => (
+                  <WorkOrderCard key={order.workOrderId} order={order} />
+                ))}
+              </div>
+            </div>
+          );
+        })}
       </div>
 
-      {/* Department Breakdown Chart */}
-      <div className="chart-container">
-        <h3 className="chart-title">Department Breakdown</h3>
-        <div className="pie-chart-wrapper">
-          <PieChart width={350} height={300}>
-            <Pie
-              data={departmentData}
-              dataKey="value"
-              nameKey="name"
-              cx="50%"
-              cy="50%"
-              outerRadius={100}
-              fill="#82ca9d"
-              label={<CustomLabel />}
-            >
-              {departmentData.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-              ))}
-            </Pie>
-            <Tooltip content={<CustomTooltip />} />
-            <Legend 
-              verticalAlign="bottom" 
-              align="center" 
-              layout="horizontal" 
-              wrapperStyle={{ paddingTop: '10px' }}
-            />
-          </PieChart>
-        </div>
-      </div>
+      {selectedEntity && entityType === 'workorders' && (
+        <WorkOrderModal
+          workOrder={selectedEntity}
+          onClose={() => setSelectedEntity(null)}
+          onSave={handleEntitySave}
+        />
+      )}
 
-      {/* Car Status Breakdown Chart */}
-      <div className="chart-container">
-        <h3 className="chart-title">Car Status Breakdown</h3>
-        <div className="pie-chart-wrapper">
-          <PieChart width={350} height={300}>
-            <Pie
-              data={carStatusData}
-              dataKey="value"
-              nameKey="name"
-              cx="50%"
-              cy="50%"
-              outerRadius={100}
-              fill="#FF8042"
-              label={<CustomLabel />}
-            >
-              {carStatusData.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-              ))}
-            </Pie>
-            <Tooltip content={<CustomTooltip />} />
-            <Legend 
-              verticalAlign="bottom" 
-              align="center" 
-              layout="horizontal" 
-              wrapperStyle={{ paddingTop: '10px' }}
-            />
-          </PieChart>
-        </div>
-      </div>
+      {selectedEntity && entityType === 'cars' && (
+        <CarModal
+          car={selectedEntity}
+          onClose={() => setSelectedEntity(null)}
+          onSave={() => setSelectedEntity(null)}
+        />
+      )}
+
+      {selectedEntity && entityType === 'users' && (
+        <UserModal
+          user={selectedEntity}
+          onClose={() => setSelectedEntity(null)}
+          onSave={() => setSelectedEntity(null)}
+        />
+      )}
+
+      {/* Creation Modals */}
+      {modalType === 'workorder' && (
+        <WorkOrderModal
+          workOrder={emptyWorkOrder}
+          cars={cars}
+          users={users}
+          onClose={() => setModalType(null)}
+          onSave={(data) => handleCreate('workorder', data)}
+        />
+      )}
+
+      {modalType === 'car' && (
+        <CarModal
+          car={ENTITY_TEMPLATES.car}
+          onClose={() => setModalType(null)}
+          onSave={(data) => handleCreate('car', data)}
+        />
+      )}
+
+      {modalType === 'user' && isAdmin() && (
+        <UserModal
+          user={ENTITY_TEMPLATES.user}
+          onClose={() => setModalType(null)}
+          onSave={(data) => handleCreate('user', data)}
+        />
+      )}
     </div>
   );
 };
 
-DashboardAnalytics.propTypes = {
-  workOrders: PropTypes.shape({
-    pending: PropTypes.array,
-    inprogress: PropTypes.array,
-    complete: PropTypes.array,
-  }).isRequired,
-  cars: PropTypes.array.isRequired,
+Dashboard.propTypes = {
+  setToken: PropTypes.func.isRequired
 };
 
-export default DashboardAnalytics;
+// Update modal prop types for each modal to handle new entries
+// Example for WorkOrderModal:
+WorkOrderModal.propTypes = {
+  workOrder: PropTypes.shape({
+    _id: PropTypes.string, // Make optional for new entries
+    workOrderId: PropTypes.number, // Make optional for new entries
+    department: PropTypes.string.isRequired,
+    // ...other props...
+  }).isRequired,
+  onClose: PropTypes.func.isRequired,
+  onSave: PropTypes.func.isRequired
+};
+
+export default Dashboard;
