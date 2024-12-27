@@ -5,20 +5,16 @@ import SearchBar from '../search/SearchBar';
 import WorkOrderModal from '../modals/WorkOrderModal';
 import CarModal from '../modals/CarModal';
 import UserModal from '../modals/UserModal';
+import DashboardAnalytics from './DashboardAnalytics';
 import '../../styles/Dashboard.css';
 import '../../styles/Modal.css';
-
-/**
- * Dashboard Component
- * Main interface for managing work orders, users, and cars
- */
 
 const Dashboard = ({ setToken }) => {
   const [modalType, setModalType] = useState(null);
   const [cars, setCars] = useState([]);
   const [users, setUsers] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
+  
   const isAdmin = () => {
     const token = localStorage.getItem('token');
     if (!token) return false;
@@ -109,7 +105,7 @@ const Dashboard = ({ setToken }) => {
     if (isSubmitting) return;
     setIsSubmitting(true);
     setError(null);
-
+  
     try {
       const response = await fetch(
         `${import.meta.env.VITE_BACKEND_URL}/api/${type}s`,
@@ -122,13 +118,13 @@ const Dashboard = ({ setToken }) => {
           body: JSON.stringify(data)
         }
       );
-
+  
       if (!response.ok) {
         throw new Error(`Failed to create ${type}`);
       }
-
+  
       const newEntity = await response.json();
-
+  
       // Update state based on entity type
       switch (type) {
         case 'workorder':
@@ -144,7 +140,7 @@ const Dashboard = ({ setToken }) => {
           setUsers(prev => [...prev, newEntity]);
           break;
       }
-
+  
       setModalType(null);
     } catch (error) {
       setError(error.message);
@@ -342,11 +338,17 @@ const Dashboard = ({ setToken }) => {
           </button>
         </div>
       </div>
+      {!isLoading && (
+        <DashboardAnalytics 
+          workOrders={workOrders}
+          cars={cars} // Add cars prop
+        />
+      )}
       <div className="dashboard-content">
         {Object.entries(STATUS_MAPPING).map(([key, { display, backend }]) => {
           const statusKey = backend === 'InProgress' ? 'inprogress' : backend.toLowerCase();
           const workOrderList = workOrders[statusKey] || [];
-
+          
           return (
             <div
               key={key}
@@ -435,14 +437,12 @@ Dashboard.propTypes = {
   setToken: PropTypes.func.isRequired
 };
 
-// Update modal prop types for each modal to handle new entries
-// Example for WorkOrderModal:
+
 WorkOrderModal.propTypes = {
   workOrder: PropTypes.shape({
-    _id: PropTypes.string, // Make optional for new entries
-    workOrderId: PropTypes.number, // Make optional for new entries
+    _id: PropTypes.string, 
+    workOrderId: PropTypes.number,
     department: PropTypes.string.isRequired,
-    // ...other props...
   }).isRequired,
   onClose: PropTypes.func.isRequired,
   onSave: PropTypes.func.isRequired

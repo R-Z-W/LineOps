@@ -2,7 +2,14 @@ import { PieChart, Pie, Cell, Legend, Tooltip } from 'recharts';
 import '../../styles/DashboardAnalytics.css';
 import PropTypes from 'prop-types';
 
-
+/**
+ * DashboardAnalytics Component
+ * Renders pie charts based on work order and car data.
+ *
+ * @param {Object} props
+ * @param {Object} props.workOrders - An object containing arrays of work orders keyed by status
+ * @param {Array} props.cars - Array of car objects
+ */
 const DashboardAnalytics = ({ workOrders, cars }) => {
   // Flatten work orders into a single array
   const allOrders = [
@@ -46,8 +53,16 @@ const DashboardAnalytics = ({ workOrders, cars }) => {
   const COLORS = ['#0088FE', '#FFBB28', '#FF8042', '#9C27B0', '#4CAF50', '#795548'];
 
   // Custom Label Component
-
-  const CustomLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, value }) => {
+  // 
+  const CustomLabel = ({
+    cx = 0,
+    cy = 0,
+    midAngle = 0,
+    innerRadius = 0,
+    outerRadius = 0,
+    percent = 0,
+    value = 0
+  }) => {
     const RADIAN = Math.PI / 180;
     const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
     const x = cx + radius * Math.cos(-midAngle * RADIAN);
@@ -60,24 +75,22 @@ const DashboardAnalytics = ({ workOrders, cars }) => {
         fill="#fff"
         textAnchor="middle"
         dominantBaseline="central"
-        fontSize="12px"
       >
         {`${value} (${(percent * 100).toFixed(0)}%)`}
       </text>
     ) : null;
   };
 
+  // Update PropTypes with default values
   CustomLabel.propTypes = {
-    cx: PropTypes.number.isRequired,
-    cy: PropTypes.number.isRequired,
-    midAngle: PropTypes.number.isRequired,
-    innerRadius: PropTypes.number.isRequired,
-    outerRadius: PropTypes.number.isRequired,
-    percent: PropTypes.number.isRequired,
-    value: PropTypes.number.isRequired,
+    cx: PropTypes.number,
+    cy: PropTypes.number,
+    midAngle: PropTypes.number,
+    innerRadius: PropTypes.number,
+    outerRadius: PropTypes.number,
+    percent: PropTypes.number,
+    value: PropTypes.number
   };
-
-  // Custom Tooltip Component
 
   // Custom Tooltip Component
   const CustomTooltip = ({ active, payload }) => {
