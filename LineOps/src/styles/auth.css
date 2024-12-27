@@ -1,0 +1,140 @@
+/* Login Page */
+.login-page {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--discord-dark);
+    padding: 2rem;
+  }
+  
+  /* Login Container */
+  .login-container {
+    background-color: var(--discord-bg);
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    width: 100%;
+    max-width: 440px;
+    padding: 32px;
+    margin: 0 auto;
+    margin-top: 300px; /* Adjust this value to move container down */
+    animation: slideUp 0.3s ease-out;
+  }
+  
+  .login-container h1 {
+    color: #fff;
+    font-size: 24px;
+    font-weight: 600;
+    text-align: center;
+    margin-bottom: 24px;
+  }
+  
+  /* Form Controls */
+  .form-group {
+    margin-bottom: 20px;
+  }
+  
+  .form-group label {
+    display: block;
+    color: var(--discord-text);
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+  }
+  
+  .form-group input {
+    width: 100%;
+    padding: 10px;
+    background-color: var(--discord-light);
+    border: 1px solid transparent;
+    border-radius: 4px;
+    color: var(--discord-text);
+    font-size: 16px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  
+  .form-group input:focus {
+    border-color: var(--discord-accent);
+    box-shadow: 0 0 0 2px rgba(88, 101, 242, 0.3);
+  }
+  
+  /* Login Button */
+  button[type="submit"] {
+    width: 100%;
+    padding: 12px;
+    margin: 24px auto 0;
+    background-color: var(--discord-accent);
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    font-size: 16px;
+    font-weight: 500;
+    text-align: center;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+  
+  .login-button:hover:not(:disabled) {
+    background-color: #4752c4;
+  }
+  
+  .login-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  
+  /* Error States */
+  .error-message {
+    background-color: rgba(237, 66, 69, 0.1);
+    border: 1px solid rgba(237, 66, 69, 0.2);
+    color: var(--discord-error);
+    padding: 10px;
+    border-radius: 4px;
+    margin-bottom: 16px;
+    font-size: 14px;
+  }
+  
+  /* Loading State */
+  .loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    background-color: #2f3136;
+    color: #ffffff;
+  }
+  
+  .loading-spinner {
+    width: 24px;
+    height: 24px;
+    border: 3px solid #40444b;
+    border-radius: 50%;
+    border-top-color: #fff;
+    animation: spin 1s linear infinite;
+    margin: 0 auto;
+  }
+  
+  .loading-text {
+    font-size: 1.2rem;
+    color: #b9bbbe;
+  }
+  
+  /* Animations */
+  @keyframes slideUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
