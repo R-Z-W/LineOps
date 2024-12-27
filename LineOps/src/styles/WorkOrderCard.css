@@ -1,0 +1,71 @@
+.workorder-card {
+    background: white;
+    border-radius: 8px;
+    padding: 16px;
+    margin: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    cursor: move;
+    transition: all 0.2s ease;
+    width: 100%;
+    min-width: 900px; /* Ensure minimum width for 3 columns */
+  }
+  
+  .workorder-card:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    transform: translateY(-2px);
+  }
+  
+  .workorder-card.dragging {
+    opacity: 0.5;
+    transform: scale(0.95);
+  }
+  
+  .car-details {
+    margin: 8px 0;
+    color: #666;
+    font-size: 0.9em;
+  }
+  
+  .workorder-card h3 {
+    margin: 0 0 8px 0;
+    color: #333;
+  }
+  
+  .workorder-card p {
+    margin: 4px 0;
+  }
+  
+  .additional-info {
+    display: grid;
+    width: 100%;
+    padding: 0px 8px;
+    box-sizing: border-box;
+  }
+  
+  .info-column {
+    width: calc(33.33%);
+    min-width: 150px;
+    padding: 8px;
+    /* border-right: 1px solid #40444b; */
+  }
+  
+  .info-column:last-child {
+    border-right: none;
+  }
+  
+  .info-label {
+    font-size: 0.8rem;
+    color: #72767d;
+    text-transform: uppercase;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  
+  .info-value {
+    font-size: 0.9rem;
+    color: #ffffff;
+    margin: 0;
+    white-space: nowrap; /* Prevent text wrapping */
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
