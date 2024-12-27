@@ -6,7 +6,7 @@ import ProtectedRoute from './components/common/ProtectedRoute';
 import './index.css';
 
 const App = () => {
-  // Initialize token state from localStorage
+  // Token state management
   const [token, setToken] = useState(() => localStorage.getItem('token'));
 
   return (
@@ -26,7 +26,7 @@ const App = () => {
           </ProtectedRoute>
         }
       />
-      
+
       {/* Fallback Route - Redirect to Login */}
       <Route 
         path="*" 
