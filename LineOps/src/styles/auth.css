@@ -1,3 +1,17 @@
+/* src/styles/auth.css
+.logout-button {
+    padding: 8px 16px;
+    cursor: pointer;
+    background-color: #ff4444;
+    color: white;
+    border: none;
+    border-radius: 4px;
+  }
+  
+  .logout-button:hover {
+    background-color: #ff6666;
+  } */
+
 /* Login Page */
 .login-page {
     min-height: 100vh;

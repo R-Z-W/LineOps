@@ -1,0 +1,397 @@
+:root {
+    /* Background Colors */
+    --bg-dark: #2c2f33;
+    --bg-card: #36393f;
+    --bg-card-hover: #3e4147;
+    --bg-analytics: #40444b;
+    
+    /* Text Colors */
+    --text-main: #ffffff;
+    --text-secondary: #666666;
+    --text-accent: #ffffff;
+    --text-legend: #ffffff;
+    
+    /* Border Colors */
+    --border-subtle: #40444b;
+    
+    /* Shadows */
+    --shadow-light: rgba(0, 0, 0, 0.1);
+    --shadow-medium: rgba(0, 0, 0, 0.2);
+    --shadow-heavy: rgba(0, 0, 0, 0.3);
+    
+    /* Accent Colors */
+    --accent-primary: #9C27B0;
+    --accent-secondary: #4CAF50;
+    
+    /* Other Colors */
+    --color-primary: #0088FE;
+    --color-secondary: #FFBB28;
+    --color-tertiary: #FF8042;
+  }
+  
+  /* Dashboard.css */
+  .dashboard {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background-color: #2f3136;
+    min-height: 100vh;
+    padding: 1rem;
+    overflow-x: auto;
+  }
+  
+  .dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    color: #ffffff;
+    background-color: var(--bg-dark);
+    border-bottom: 1px solid var(--border-subtle);
+  }
+  
+  .work-order-columns {
+    display: flex;
+    flex: 1;
+    gap: 1rem;
+    padding: 1rem;
+    overflow-x: auto;
+    height: calc(100vh - 80px);
+  }
+  
+  .column {
+    flex: 1;
+    min-width: 300px;
+    max-width: 400px;
+    background-color: #36393f;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+  
+  .column-header {
+    padding: 1rem;
+    background-color: #34373d;
+    border-radius: 8px 8px 0 0;
+    border-bottom: 2px solid #40444b;
+  }
+  
+  .column-content {
+    padding: 16px;
+    overflow-y: auto;
+    flex: 1;
+    gap: 1rem;
+    display: flex;
+    flex-direction: column;
+    background-color: #34373d;
+  }
+  
+  .column-content::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  .column-content::-webkit-scrollbar-track {
+    background: #2f3136;
+  }
+  
+  .column-content::-webkit-scrollbar-thumb {
+    background: #202225;
+    border-radius: 4px;
+  }
+  
+  .work-order-count {
+    background-color: #40444b;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.875rem;
+    margin-left: 0.5rem;
+  }
+  
+  .status-column {
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 180px); /* Adjust for header + padding */
+    min-width: 600px;
+    background: var(--bg-dark);
+    border-radius: 8px;
+    margin: 0 10px;
+    padding-bottom: 20px; /* Add padding at bottom */
+    overflow-y: auto;
+    min-width: 300px; /* Minimum column width */
+    max-width: 600px;
+    flex: 1;
+  }
+  
+  .status-column h2 {
+    text-align: center;
+    font-size: 1.5rem;
+    color: #ffffff;
+    margin-bottom: .1rem;
+    padding-bottom: .1rem;
+  }
+  
+  .work-order-card {
+    background-color: var(--bg-card); /* Card background */
+    border: 1px solid var(--border-subtle); /* Subtle border */
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 15px;
+    box-shadow: 0 2px 5px var(--shadow-medium);
+    cursor: grab;
+    transition: transform 0.2s ease, background-color 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .work-order-card:hover {
+    transform: scale(1.02); /* Slight zoom on hover */
+    background-color: var(--bg-card-hover); /* Slightly lighter shade on hover */
+  }
+  
+  .work-order-card h3 {
+    font-size: 1.2rem;
+    margin-bottom: 10px;
+    color: #ffffff; /* White text */
+  }
+  
+  .work-order-card p {
+    font-size: 0.9rem;
+    margin: 5px 0;
+    color: #b9bbbe; /* Lighter text for secondary information */
+  }
+  
+  .work-order-card .department {
+    margin: 0;
+    color: #7289da;
+    font-size: 1.2rem;
+  }
+  
+  .work-order-card .work-order-id {
+    color: #72767d;
+    display: block;
+    margin-bottom: 8px;
+  }
+  
+  .work-order-card .service-type {
+    color: #ffffff;
+    font-size: 1.1rem;
+    /* margin: 8px 0; */
+  }
+  
+  .work-order-card .additional-info {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 1rem;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid #40444b;
+  }
+  
+  .work-order-card .car-details,
+  .work-order-card .service-details {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .work-order-card .service-info{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding: 0 8px;
+    box-sizing: border-box;
+  }
+  
+  
+  .work-order-card .info-label {
+    color: #7289da;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    margin-bottom: 2px;
+  }
+  
+  .work-order-card .info-value {
+    color: #b9bbbe;
+    font-size: 0.9rem;
+    margin: 0;
+  }
+  
+  /* Scroll styling */
+  .status-column::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  .status-column::-webkit-scrollbar-thumb {
+    background: #7289da; /* Discord blue for scrollbar */
+    border-radius: 8px;
+  }
+  
+  .status-column::-webkit-scrollbar-thumb:hover {
+    background: #5b6eaa; /* Darker blue on hover */
+  }
+  
+  .status-column::-webkit-scrollbar-track {
+    background: #2c2f33; /* Match background */
+  }
+  
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    width: 100%;
+    padding: 0 8px;
+    box-sizing: border-box;
+  }
+  
+  .status-badge {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    color: #000;
+  }
+  
+  .logout-button {
+    background-color: #ff4d4f;
+    color: var(--text-main);
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+  }
+  
+  .logout-button:hover {
+    background-color: #ff7875;
+  }
+  
+  .dashboard-content {
+    margin-top: .1rem;
+    padding: 5px;
+    display: flex;
+    justify-content: space-between;
+    display: flex;
+    gap: 1rem;
+    padding: 1rem;
+    min-width: min-content; /* Prevent columns from shrinking too much */
+  }
+  
+  .header-controls {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  
+  .action-buttons {
+    display: flex;
+    gap: 0.5rem;
+  }
+  
+  .create-button {
+    background-color: var(--accent-primary);
+    color: var(--text-main);
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+  }
+  
+  .create-button:hover {
+    background-color: var(--accent-secondary);
+  }
+  
+  .create-button.admin {
+    background-color: #43b581;
+  }
+  
+  .create-button.admin:hover {
+    background-color: #3ca374;
+  }
+  
+  .work-order-card:last-child {
+    margin-bottom: 350px; /* Add margin to last card */
+  }
+  
+  /* Responsive Breakpoints */
+  @media screen and (max-width: 1400px) {
+    .dashboard-content {
+      justify-content: flex-start;
+      overflow-x: auto;
+    }
+  }
+  
+  @media (max-width: 1200px) {
+    .analytics-container {
+      justify-content: center;
+    }
+  }
+  
+  @media screen and (max-width: 1200px) {
+    .status-column {
+      min-width: 280px;
+    }
+    
+    .analytics-container {
+      justify-content: center;
+    }
+  }
+  
+  @media (max-width: 768px) {
+    .header-controls {
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    
+    .action-buttons {
+      width: 100%;
+    }
+    
+    .create-button {
+      flex: 1;
+    }
+  
+    .chart-container {
+      width: 100%;
+      max-width: 350px;
+    }
+  }
+  
+  @media screen and (max-width: 768px) {
+    .header-controls {
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    
+    .action-buttons {
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    
+    .status-column {
+      min-width: 260px;
+    }
+    
+    .work-order-card {
+      font-size: 0.9rem;
+    }
+  }
+  
+  @media screen and (max-width: 480px) {
+    .dashboard {
+      padding: 0.5rem;
+    }
+    
+    .status-column {
+      min-width: 240px;
+    }
+    
+    .work-order-card {
+      padding: 10px;
+    }
+  }
