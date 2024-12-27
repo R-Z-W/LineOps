@@ -6,48 +6,45 @@ import '../../styles/Modal.css';
 
 
 const Dashboard = ({ setToken }) => {
-  
-  return (
-    <div className="dashboard">
-      <div className="dashboard-header">
-        <h1>Work Order Dashboard</h1>
-        <div className="header-controls">
-          <div className="action-buttons">
-            <button 
-              className="create-button"
-              onClick={() => setModalType('workorder')}
-            >
-              New Work Order
-            </button>
-            <button 
-              className="create-button"
-              onClick={() => setModalType('car')}
-            >
-              New Car
-            </button>
-            {isAdmin() && (
-              <button 
-                className="create-button admin"
-                onClick={() => setModalType('user')}
-              >
-                New User
-              </button>
-            )}
+    return (
+        <div className="dashboard">
+          <div className="dashboard-header">
+            <h1>Work Order Dashboard</h1>
+            <div className="header-controls">
+          <div className="dashboard-content">
+            {Object.entries(STATUS_MAPPING).map(([key, { display, backend }]) => {
+              const statusKey = backend === 'InProgress' ? 'inprogress' : backend.toLowerCase();
+              const workOrderList = workOrders[statusKey] || [];
+              
+              return (
+                <div
+                  key={key}
+                  className="status-column"
+                  onDrop={(e) => {
+                    const orderId = e.dataTransfer.getData('orderId');
+                    handleDrop(orderId, backend);
+                  }}
+                  onDragOver={(e) => e.preventDefault()}
+                >
+                  <div className="column-header">
+                    <h2>{display}</h2>
+                  </div>
+                  <div className="column-content">
+                    {workOrderList.map((order) => (
+                      <WorkOrderCard
+                        key={order.workOrderId}
+                        order={order}
+                        onDoubleClick={(clickedOrder) => {
+                          setSelectedEntity(clickedOrder);
+                          setEntityType('workorders');
+                        }}
+                      />
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
           </div>
-          <SearchBar onSelect={handleEntitySelect} />
-          <button 
-            className="logout-button"
-            onClick={() => {
-              localStorage.removeItem('token');
-              setToken(null);
-            }}
-          >
-            Logout
-          </button>
-        </div>
-      </div>
-    </div>
-  );};
 
 Dashboard.propTypes = {
   setToken: PropTypes.func.isRequired
