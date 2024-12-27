@@ -26,6 +26,12 @@ const App = () => {
           </ProtectedRoute>
         }
       />
+      
+      {/* Fallback Route - Redirect to Login */}
+      <Route 
+        path="*" 
+        element={<Navigate to="/login" />} 
+      />
     </Routes>
   );
 };
