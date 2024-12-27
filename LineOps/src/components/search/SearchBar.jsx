@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 import useDebounce from '../../hooks/useDebounce';
-import './SearchBar.css';
+import '../../styles/SearchBar.css';
 
 // Entity type configurations
 const ENTITY_TYPES = {
@@ -11,6 +11,7 @@ const ENTITY_TYPES = {
 };
 
 // Add scoring function at the top level
+// https://medium.com/@gifftybabe/building-a-search-engine-from-scratch-in-javascript-7fcc138b9f9c
 // Basic TF-IDF scoring function
 // Based on the query and entity type, calculate a relevance score for each item
 // The score is based on the number of times the query appears in the item's fields
