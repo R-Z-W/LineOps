@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import LoginPage from './components/auth/Login';
+import Dashboard from './components/workorder/Dashboard';
+import ProtectedRoute from './components/common/ProtectedRoute';
 import './index.css';
 
 const App = () => {
@@ -13,6 +15,16 @@ const App = () => {
       <Route 
         path="/login" 
         element={<LoginPage setToken={setToken} />} 
+      />
+
+      {/* Protected Dashboard Route */}
+      <Route
+        path="/dashboard"
+        element={
+          <ProtectedRoute token={token}>
+            <Dashboard setToken={setToken} />
+          </ProtectedRoute>
+        }
       />
     </Routes>
   );
